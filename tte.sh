@@ -52,6 +52,10 @@ FN_PromptEULA () {
     return 1
 }
 
+FN_SelectExistingOrCreateNewCert () {
+    zenity --list --radiolist --title="Tentukan Pilihan" --text="Gunakan sertifikat yang ada atau buat baru?" --column="#" --column="Nomor" --column="Pilihan" --print-column=2 --width=${UI_GENERAL_WINDOW_SIZE[0]} --height=${UI_GENERAL_WINDOW_SIZE[1]} "TRUE" 1 "Gunakan sertifikat yang ada" "FALSE" 2 "Buat sertifikat baru"
+}
+
 # Menampilkan dialog pemilihan file PDF.
 FN_SelectPDFFile () {
     # Karena fungsi bash cuma bisa mengembalikan numeric integer value, maka langsung aja perintah tanpa dibungkus $(). 
@@ -103,6 +107,9 @@ FN_ShowInfo () {
 
 # Mendapatkan sertifikat yang tersedia dan valid di dalam direktori ./certs.
 FN_GetAvailableCertificates() {
+    
+    DATA_CERTIFICATES_AVAILABLE=()
+    
     for COMMON_NAME_DIR in "$PATH_CERTS_DIR"/*; do
     
         # Jika item dalam $PATH_CERTS_DIR bukan direktori, skip.
@@ -133,7 +140,7 @@ FN_GetAvailableCertificates() {
 
 # Menampilkan daftar sertifikat yang tersedia dan user harus milih satu.
 FN_ShowSelectAvailableCertificates() {
-    zenity --list --radiolist --title="Pilih Sertifikat" --text="Pilih sertifikat elektronik yang ingin digunakan untuk menandatangani dokumen." --column="#" --column="ID Sertifikat" --column="Nama Sertifikat" --width=${UI_GENERAL_WINDOW_SIZE[0]} --height=${UI_GENERAL_WINDOW_SIZE[1]} "${DATA_CERTIFICATES_AVAILABLE[@]}"
+    zenity --list --radiolist --title="Pilih Sertifikat" --text="Pilih sertifikat elektronik yang ingin digunakan untuk menandatangani dokumen." --column="#" --column="ID Sertifikat" --column="Nama Sertifikat" --print-column=2 --width=${UI_GENERAL_WINDOW_SIZE[0]} --height=${UI_GENERAL_WINDOW_SIZE[1]} "${DATA_CERTIFICATES_AVAILABLE[@]}"
 }
 
 # Fungsi penandatanganan dokumen PDF.
@@ -155,12 +162,22 @@ FN_SignPDF() {
     fi
 }
 # =========================== END OF FUNCTIONS DEFINITION ===========================
+
 # =========================== BEGINING OF ALGORITHM ===========================
 
 FN_ReadConfig || exit 1
 
 if [ "$DATA_EULA_AGREED" = "FALSE" ]; then
     FN_PromptEULA || exit 1
+fi
+
+FN_GetAvailableCertificates || exit 1
+
+if [ "${#DATA_CERTIFICATES_AVAILABLE[@]}" -eq 0 ]; then
+    FN_ShowInfo "" "Creating certificate..."
+else
+    SIGNATORY_CERT_OPTION=$(FN_SelectExistingOrCreateNewCert) || exit 1
+    [ "$SIGNATORY_CERT_OPTION" = "2" ] && FN_ShowInfo "" "Creating certificate..."
 fi
 
 SELECTED_PDF_FILE=$(FN_SelectPDFFile) || exit 1
