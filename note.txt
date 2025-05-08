@@ -1,6 +1,0 @@
-1. Tambahin fitur pilih pake sertif yang ada atau bikin baru. After pilih file PDF.
-2. jika bikin baru maka arahkan ke algoritma bikin sertifikat baru pikirin juga cara incremental ID [LEWAT CONFIG NUMBER OF CERTS].
-3. Benerin UI dan response saat selesai di ttd tambahkan opsi untuk buka file langsung. [OK; some canceled]
-4. Fix fungsi sign pdf gak jalan. [OK]
-5. Add EULA agreement, state stored in .config file [OK].
-5. Fix variable naming and tidy up the comments.
