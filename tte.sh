@@ -9,20 +9,19 @@ PATH_SIGNER="$PATH_SCRIPT_DIR/.resources/open-pdf-sign.jar"
 PATH_CONFIG_FILE="$PATH_SCRIPT_DIR/.resources/.config"
 PATH_EULA_FILE="$PATH_SCRIPT_DIR/.resources/EULA.html"
 
-CONFIG_KEY_EULA="EULA_AGREED"
-
 UI_WINDOW_SIZE_GENERAL=(800 400)
 UI_WINDOW_SIZE_ALERT=(300 100)
 
 declare -A DATA_MAP_CERTIFICATES_AVAILABLE
 DATA_CERTIFICATES_AVAILABLE=()
-DATA_EULA_AGREED="FALSE"
 
 mkdir -p "$PATH_CERTS_DIR"
+touch "$PATH_CONFIG_FILE"
 
 # =========================== FUNCTIONS DEFINITION ===========================
 FN_ReadConfig () {
-    grep -q "^$CONFIG_KEY_EULA=TRUE$" "$PATH_CONFIG_FILE" 2> /dev/null && DATA_EULA_AGREED="TRUE" || DATA_EULA_AGREED="FALSE"
+    local KEY="$1"
+    grep "^$KEY=" "$PATH_CONFIG_FILE" 2>/dev/null | cut -d '=' -f 2
 }
 
 FN_WriteConfig () {
@@ -46,7 +45,7 @@ FN_PromptEULA () {
     zenity --text-info --title="Perjanjian Lisensi Pengguna Akhir (EULA)" --filename="$PATH_EULA_FILE" --checkbox="Saya menyetujui ketentuan dalam EULA ini." --html --width=${UI_WINDOW_SIZE_GENERAL[0]} --height=${UI_WINDOW_SIZE_GENERAL[1]}
 
     if [ $? -eq 0 ]; then
-        FN_WriteConfig "$CONFIG_KEY_EULA" "TRUE" && return 0
+        FN_WriteConfig "EULA_AGREED" "TRUE" && return 0
     fi
 
     return 1
@@ -151,12 +150,18 @@ FN_SignPDF() {
     local OUTPUT_FILE_PATH="$4"
     local RESULT
 
+    echo "Signing $PDF_FILE ..."
+
     RESULT=$(java -jar "$PATH_SIGNER" -c "$CERT_FILE" -k "$KEY_FILE"  -i "$PDF_FILE"  -o "$OUTPUT_FILE_PATH" )
     
     if [ $? -eq 0 ]; then
+        echo "Signing OK!"
+
         FN_ShowInfo "Berhasil" "File PDF berhasil ditandatangani dan telah disimpan di:\n$OUTPUT_FILE_PATH\n\n$(pdfsig "$OUTPUT_FILE_PATH")"
         return 0
     else
+        echo "Signing FAILED! $RESULT"
+
         FN_ShowError "" "File PDF gagal ditandatangani.\n\n$RESULT"
         return 1
     fi
@@ -165,9 +170,9 @@ FN_SignPDF() {
 
 # =========================== BEGINING OF ALGORITHM ===========================
 
-FN_ReadConfig || exit 1
+EULA="$(FN_ReadConfig "EULA_AGREED")"
 
-if [ "$DATA_EULA_AGREED" = "FALSE" ]; then
+if [[ -z "$EULA" || "$EULA" = "FALSE" ]]; then
     FN_PromptEULA || exit 1
 fi
 
