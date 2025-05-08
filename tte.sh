@@ -5,18 +5,18 @@
 
 PATH_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PATH_CERTS_DIR="$PATH_SCRIPT_DIR/.certs"
-PATH_SIGNER="$PATH_SCRIPT_DIR/open-pdf-sign.jar"
-PATH_CONFIG_FILE="$PATH_SCRIPT_DIR/.config"
-PATH_EULA_FILE="$PATH_SCRIPT_DIR/EULA.html"
+PATH_SIGNER="$PATH_SCRIPT_DIR/.resources/open-pdf-sign.jar"
+PATH_CONFIG_FILE="$PATH_SCRIPT_DIR/.resources/.config"
+PATH_EULA_FILE="$PATH_SCRIPT_DIR/.resources/EULA.html"
 
 CONFIG_KEY_EULA="EULA_AGREED"
 
-UI_GENERAL_WINDOW_SIZE=(800 400)
-UI_ALERT_WINDOW_SIZE=(300 100)
+UI_WINDOW_SIZE_GENERAL=(800 400)
+UI_WINDOW_SIZE_ALERT=(300 100)
 
+declare -A DATA_MAP_CERTIFICATES_AVAILABLE
 DATA_CERTIFICATES_AVAILABLE=()
 DATA_EULA_AGREED="FALSE"
-declare -A DATA_MAP_CERTIFICATES_AVAILABLE
 
 mkdir -p "$PATH_CERTS_DIR"
 
@@ -43,7 +43,7 @@ FN_PromptEULA () {
         return 1
     fi
 
-    zenity --text-info --title="Perjanjian Lisensi Pengguna Akhir (EULA)" --filename="$PATH_EULA_FILE" --checkbox="Saya menyetujui ketentuan dalam EULA ini." --html --width=${UI_GENERAL_WINDOW_SIZE[0]} --height=${UI_GENERAL_WINDOW_SIZE[1]}
+    zenity --text-info --title="Perjanjian Lisensi Pengguna Akhir (EULA)" --filename="$PATH_EULA_FILE" --checkbox="Saya menyetujui ketentuan dalam EULA ini." --html --width=${UI_WINDOW_SIZE_GENERAL[0]} --height=${UI_WINDOW_SIZE_GENERAL[1]}
 
     if [ $? -eq 0 ]; then
         FN_WriteConfig "$CONFIG_KEY_EULA" "TRUE" && return 0
@@ -53,13 +53,13 @@ FN_PromptEULA () {
 }
 
 FN_SelectExistingOrCreateNewCert () {
-    zenity --list --radiolist --title="Tentukan Pilihan" --text="Gunakan sertifikat yang ada atau buat baru?" --column="#" --column="Nomor" --column="Pilihan" --print-column=2 --width=${UI_GENERAL_WINDOW_SIZE[0]} --height=${UI_GENERAL_WINDOW_SIZE[1]} "TRUE" 1 "Gunakan sertifikat yang ada" "FALSE" 2 "Buat sertifikat baru"
+    zenity --list --radiolist --title="Tentukan Pilihan" --text="Gunakan sertifikat yang ada atau buat baru?" --column="#" --column="Nomor" --column="Pilihan" --print-column=2 --width=${UI_WINDOW_SIZE_GENERAL[0]} --height=${UI_WINDOW_SIZE_GENERAL[1]} "TRUE" 1 "Gunakan sertifikat yang ada" "FALSE" 2 "Buat sertifikat baru"
 }
 
 # Menampilkan dialog pemilihan file PDF.
 FN_SelectPDFFile () {
     # Karena fungsi bash cuma bisa mengembalikan numeric integer value, maka langsung aja perintah tanpa dibungkus $(). 
-    zenity --file-selection --title="Pilih File PDF Untuk Ditandatangani" --file-filter="*.pdf" --width=${UI_GENERAL_WINDOW_SIZE[0]} --height=${UI_GENERAL_WINDOW_SIZE[1]}
+    zenity --file-selection --title="Pilih File PDF Untuk Ditandatangani" --file-filter="*.pdf" --width=${UI_WINDOW_SIZE_GENERAL[0]} --height=${UI_WINDOW_SIZE_GENERAL[1]}
 }
 
 FN_StorePDFFilePath () {
@@ -85,7 +85,7 @@ FN_ShowQuestion () {
     local OPTION_TRUE=${3:-"Ya"}
     local OPTION_FALSE=${4:-"Tidak"}
 
-    zenity --question --title="$TITLE" --text="$MESSSAGE" --ok-label="$OPTION_TRUE" --cancel-label="$OPTION_FALSE" --width=${UI_ALERT_WINDOW_SIZE[0]} --height=${UI_ALERT_WINDOW_SIZE[1]}
+    zenity --question --title="$TITLE" --text="$MESSSAGE" --ok-label="$OPTION_TRUE" --cancel-label="$OPTION_FALSE" --width=${UI_WINDOW_SIZE_ALERT[0]} --height=${UI_WINDOW_SIZE_ALERT[1]}
 }
 
 FN_ShowError () {
@@ -93,7 +93,7 @@ FN_ShowError () {
     local MESSSAGE="${2:-"Terjadi kesalahan yang tidak diketahui."}"
     local THEN_EXIT="${3:-0}"
 
-    zenity --error --title="$TITLE" --text="$MESSSAGE" --width=${UI_ALERT_WINDOW_SIZE[0]} --height=${UI_ALERT_WINDOW_SIZE[1]}
+    zenity --error --title="$TITLE" --text="$MESSSAGE" --width=${UI_WINDOW_SIZE_ALERT[0]} --height=${UI_WINDOW_SIZE_ALERT[1]}
 
     [ "$THEN_EXIT" = 1 ] && exit 1
 }
@@ -102,7 +102,7 @@ FN_ShowInfo () {
     local TITLE="${1:-"Informasi"}"
     local MESSSAGE="$2"
 
-    zenity --info --title="$TITLE" --text="$MESSSAGE" --width=${UI_ALERT_WINDOW_SIZE[0]} --height=${UI_ALERT_WINDOW_SIZE[1]}
+    zenity --info --title="$TITLE" --text="$MESSSAGE" --width=${UI_WINDOW_SIZE_ALERT[0]} --height=${UI_WINDOW_SIZE_ALERT[1]}
 }
 
 # Mendapatkan sertifikat yang tersedia dan valid di dalam direktori ./certs.
@@ -140,7 +140,7 @@ FN_GetAvailableCertificates() {
 
 # Menampilkan daftar sertifikat yang tersedia dan user harus milih satu.
 FN_ShowSelectAvailableCertificates() {
-    zenity --list --radiolist --title="Pilih Sertifikat" --text="Pilih sertifikat elektronik yang ingin digunakan untuk menandatangani dokumen." --column="#" --column="ID Sertifikat" --column="Nama Sertifikat" --print-column=2 --width=${UI_GENERAL_WINDOW_SIZE[0]} --height=${UI_GENERAL_WINDOW_SIZE[1]} "${DATA_CERTIFICATES_AVAILABLE[@]}"
+    zenity --list --radiolist --title="Pilih Sertifikat" --text="Pilih sertifikat elektronik yang ingin digunakan untuk menandatangani dokumen." --column="#" --column="ID Sertifikat" --column="Nama Sertifikat" --print-column=2 --width=${UI_WINDOW_SIZE_GENERAL[0]} --height=${UI_WINDOW_SIZE_GENERAL[1]} "${DATA_CERTIFICATES_AVAILABLE[@]}"
 }
 
 # Fungsi penandatanganan dokumen PDF.
