@@ -14,19 +14,64 @@ PATH_EULA_FILE="$PATH_SCRIPT_DIR/.resources/EULA.html"
 UI_WINDOW_SIZE_GENERAL=(800 400)
 UI_WINDOW_SIZE_ALERT=(300 100)
 
+SYSTEM_REQUIRED_PACKAGES=(zenity openssl default-jre file poppler-utils)
+
 declare -A DATA_MAP_CERTIFICATES_AVAILABLE
 DATA_CERTIFICATES_AVAILABLE=()
 # =========================== END OF GLOBAL VARIABLES DECLARATION =====================
 
 # =========================== FUNCTIONS DEFINITION ===========================
-FN_PreRun () {
+FN_Init () {
+
+    # Zenity must be installed to run this script.
+    if ! dpkg -s zenity; then
+        sudo apt-get install -y zenity || return 1
+    fi
+
+    echo "Memeriksa sistem operasi..."
+
+    if ! command -v apt; then
+        FN_ShowError "Sistem Operasi Tidak Didukung" "Skrip ini hanya mendukung sistem operasi berbasis Debian/Ubuntu."
+        return 1
+    fi 
+
+    echo "Memeriksa paket..."
+
+    local MISSING_PACKAGES=()
+
+    for PKG in "${SYSTEM_REQUIRED_PACKAGES[@]}"; do
+        if ! dpkg -s "$PKG"; then
+            MISSING_PACKAGES+=("$PKG")
+        fi
+    done
+
+    if [ ${#MISSING_PACKAGES[@]} -ne 0 ]; then        
+        FN_ShowQuestion "Beberapa Paket Tidak Terinstal" "Paket berikut tidak terinstal:\n\n$(printf "%s\n" "${MISSING_PACKAGES[@]}")\n\nUntuk menjalankan skrip ini paket-paket tersebut harus diinstal terlebih dahulu.\nIngin menginstal paket-paket tersebut?"
+
+        [ $? -ne 0 ] && return 1
+
+        echo "Menginstall paket yang hilang..."
+
+        for PKG in "${MISSING_PACKAGES[@]}"; do
+            echo "Menginstall $PKG ..."
+            sudo apt-get install -y "$PKG" || return 1
+        done
+    fi
+
+    echo "Memeriksa folder..."
     mkdir -p "$PATH_CERTS_DIR" || return 1
+
+    echo "Memeriksa file konfigurasi..."
     touch "$PATH_CONFIG_FILE" || return 1
+
+    echo "Inisialisasi selesai!"
+    
+    return 0
 }
 
 FN_ReadConfig () {
     local KEY="$1"
-    grep "^$KEY=" "$PATH_CONFIG_FILE" 2> /dev/null | cut -d '=' -f 2
+    grep "^$KEY=" "$PATH_CONFIG_FILE" | cut -d '=' -f 2
 }
 
 FN_WriteConfig () {
@@ -34,7 +79,7 @@ FN_WriteConfig () {
     local VALUE="$2"
 
     # Jika baris key=... sudah ada maka update nilainya saja.
-    if grep -q "^$KEY=" "$PATH_CONFIG_FILE" 2> /dev/null; then
+    if grep -q "^$KEY=" "$PATH_CONFIG_FILE"; then
         sed -i "s|^$KEY=.*|$KEY=$VALUE|" "$PATH_CONFIG_FILE"
     else
         echo "$KEY=$VALUE" >> "$PATH_CONFIG_FILE"
@@ -52,6 +97,8 @@ FN_PromptEULA () {
     if [ $? -eq 0 ]; then
         FN_WriteConfig "EULA_AGREED" "TRUE" && return 0 || return 1
     fi
+
+    return 1
 }
 
 FN_SelectExistingOrCreateNewCert () {
@@ -233,13 +280,13 @@ FN_SignPDF() {
 }
 # =========================== END OF FUNCTIONS DEFINITION ===========================
 # =========================== BEGINING OF ALGORITHM ===========================
-FN_PreRun || exit 1
-
 EULA="$(FN_ReadConfig "EULA_AGREED")"
 
-if [[ -z "$EULA" || "$EULA" = "FALSE" ]]; then
+if [[ -z "$EULA" || ! "$EULA" = "TRUE" ]]; then
     FN_PromptEULA || exit 1
 fi
+
+FN_Init || exit 1
 
 FN_GetAvailableCertificates || exit 1
 
