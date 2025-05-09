@@ -1,7 +1,7 @@
 # TTE: Tanda Tangan Elektronik
 **Pemanfaatan Bash Script untuk Penandatanganan Dokumen Digital di Sistem Operasi Linux**
 
-Skrip bash ini berfungsi untuk membantu pengguna menandatangi dokumen PDF menggunakan sertifikat self-signed dan hanya dapat dijalankan pada sistem yang menjalankan sistem operasi berbasis Debian seperti Ubuntu dan sejenisnya.
+Skrip bash ini berfungsi untuk membantu pengguna menandatangi dokumen PDF menggunakan sertifikat self-signed. Skrip ini hanya dapat dijalankan pada sistem yang menjalankan sistem operasi Linux berbasis Debian seperti Ubuntu dan sejenisnya yang memiliki desktop environment (non-headless).
 
 Skrip ini dibuat untuk memenuhi tugas kelompok proyek mata kuliah Sistem Operasi Jaringan semester 2.
 ## Prosedur Penggunaan
