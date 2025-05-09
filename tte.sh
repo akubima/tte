@@ -9,7 +9,7 @@ PATH_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PATH_CERTS_DIR="$PATH_SCRIPT_DIR/.certs"
 PATH_SIGNER="$PATH_SCRIPT_DIR/.resources/open-pdf-sign.jar"
 PATH_CONFIG_FILE="$PATH_SCRIPT_DIR/.resources/.config"
-PATH_EULA_FILE="$PATH_SCRIPT_DIR/.resources/EULA.html"
+PATH_LICENSE_FILE="$PATH_SCRIPT_DIR/.resources/LICENSE.html"
 
 UI_WINDOW_SIZE_GENERAL=(800 400)
 UI_WINDOW_SIZE_ALERT=(300 100)
@@ -86,16 +86,16 @@ FN_WriteConfig () {
     fi
 }
 
-FN_PromptEULA () {
-    if [ ! -f "$PATH_EULA_FILE" ]; then
-        FN_ShowError "" "EULA tidak dapat ditemukan!"
+FN_PromptLicense () {
+    if [ ! -f "$PATH_LICENSE_FILE" ]; then
+        FN_ShowError "" "File informasi lisensi tidak dapat ditemukan!"
         return 1
     fi
 
-    zenity --text-info --title="Perjanjian Lisensi Pengguna Akhir (EULA)" --filename="$PATH_EULA_FILE" --checkbox="Saya menyetujui ketentuan dalam EULA ini." --html --width=${UI_WINDOW_SIZE_GENERAL[0]} --height=${UI_WINDOW_SIZE_GENERAL[1]}
+    zenity --text-info --title="Persetujuan Lisensi" --filename="$PATH_LICENSE_FILE" --checkbox="Saya menyetujui ketentuan dalam lisensi ini." --html --width=${UI_WINDOW_SIZE_GENERAL[0]} --height=${UI_WINDOW_SIZE_GENERAL[1]}
 
     if [ $? -eq 0 ]; then
-        FN_WriteConfig "EULA_AGREED" "TRUE" && return 0 || return 1
+        FN_WriteConfig "LICENSE_AGREED" "TRUE" && return 0 || return 1
     fi
 
     return 1
@@ -280,10 +280,10 @@ FN_SignPDF() {
 }
 # =========================== END OF FUNCTIONS DEFINITION ===========================
 # =========================== BEGINING OF ALGORITHM ===========================
-EULA="$(FN_ReadConfig "EULA_AGREED")"
+LICENSE="$(FN_ReadConfig "LICENSE_AGREED")"
 
-if [[ -z "$EULA" || ! "$EULA" = "TRUE" ]]; then
-    FN_PromptEULA || exit 1
+if [[ -z "$LICENSE" || ! "$LICENSE" = "TRUE" ]]; then
+    FN_PromptLicense || exit 1
 fi
 
 FN_Init || exit 1
