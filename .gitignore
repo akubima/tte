@@ -1,1 +1,5 @@
+.*
+!.gitignore
+!.certs
+!.resources
 note.txt
