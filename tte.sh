@@ -102,7 +102,16 @@ FN_ShowInfo () {
 FN_CreateCertificate () {
     local MAN_CN MAN_EMAIL OPS_ORG MAN_COUNTRY FORM_RESULT CONFIG_LAST_CERT_ID CURRENT_CERT_ID CURRENT_CERT_NAME CURRENT_CERT_DIR
     
-    while [[ -z "$MAN_CN" || -z "$MAN_EMAIL" || -z "$MAN_COUNTRY" ]]; do
+    # Allowed input characters pattern: 
+    #   letters (a-zA-Z),
+    #   digits (0-9), 
+    #   dot (.), 
+    #   hyphen (-), 
+    #   at-sign (@), 
+    #   and space.
+    local ALLOWED_PATTERN="^[-a-zA-Z0-9.@ ]*$"
+
+    while true; do
         FORM_RESULT=$(zenity --forms \
             --title="Buat Sertifikat Baru" \
             --separator="|" \
@@ -114,22 +123,32 @@ FN_CreateCertificate () {
             --add-combo="Negara (C)" \
             --combo-values="ID|AR|AU|BR|CA|CN|FR|DE|IN|IT|JP|MX|RU|SA|ZA|KR|TR|GB|US|EU"
         )
-        
+
         [ $? -ne 0 ] && return 1
 
         IFS="|" read -r MAN_CN MAN_EMAIL OPS_ORG MAN_COUNTRY <<< "$FORM_RESULT"
+
+        # === INPUT SANITIZATION ===
+        # Hapus spasi di awal dan akhir dari setiap input.
+        MAN_CN=$(echo "$MAN_CN" | xargs)
+        MAN_EMAIL=$(echo "$MAN_EMAIL" | xargs)
+        OPS_ORG=$(echo "$OPS_ORG" | xargs)
+        MAN_COUNTRY=$(echo "$MAN_COUNTRY" | xargs)
 
         if [[ -z "$MAN_CN" || -z "$MAN_EMAIL" || -z "$MAN_COUNTRY" ]]; then
             FN_ShowError "Input Tidak Valid" "Nama Lengkap (CN), Email, dan Negara (C) harus diisi!"
             continue
         fi
 
-        for FILLING_CONTENT in "$MAN_CN" "$MAN_EMAIL" "$MAN_ORG" "$MAN_COUNTRY"; do
-            if [[ "$FILLING_CONTENT" == *"|"* || "$FILLING_CONTENT" == *";"* ]]; then
-                FN_ShowError "Karakter Tidak Valid" "Input tidak boleh mengandung karakter '|' atau ';'."
+        for FIELD in "$MAN_CN" "$MAN_EMAIL" "$OPS_ORG" "$MAN_COUNTRY"; do
+            if [[ ! "$FIELD" =~ $ALLOWED_PATTERN ]]; then
+                FN_ShowError "Input Tidak Valid" "Input hanya boleh mengandung huruf, angka, titik (.), tanda hubung (-), at-sign (@), dan spasi!\n\nSilakan coba lagi. \n\nKesalahan: $FIELD"
                 continue 2
             fi
         done
+         # === END OF INPUT SANITIZATION ===
+
+        break
     done
 
     CONFIG_LAST_CERT_ID=$(FN_ReadConfig "LAST_CERT_ID") || return 0
