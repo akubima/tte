@@ -28,8 +28,8 @@ bash tte.sh
 ## Kontributor
 Skrip ini dibuat dengan kontribusi dari semua anggota kelompok 9 dan bimbingan dosen pengampu mata kuliah Sistem Operasi Jaringan kelas BB Semester Genap Tahun Ajaran 2024/2025 Ir. Yuris Mulya Saputra, S.T., M.Sc., Ph.D.
 #### Anggota Kelompok 9:
-1. ([Nayla Innocentia Ekatri](https://github.com/naeinno))
-2. ([Azura Rizky Annisa](https://github.com/auzors))
-3. ([Bima Mukhlisin Bil Sajjad](https://github.com/akubima))
-4. ([Dafa Novran Hasjrullah]( https://github.com/Dafanh33))
-5. ([Muhamad Mirza Sabil]())
+1. [Nayla Innocentia Ekatri](https://github.com/naeinno)
+2. [Azura Rizky Annisa](https://github.com/auzors)
+3. [Bima Mukhlisin Bil Sajjad](https://github.com/akubima)
+4. [Dafa Novran Hasjrullah]( https://github.com/Dafanh33)
+5. [Muhamad Mirza Sabil]()
