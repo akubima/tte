@@ -27,7 +27,7 @@ bash tte.sh
 ```
 ## Kontributor
 Skrip ini dibuat dengan kontribusi dari semua anggota kelompok 9 dan bimbingan dosen pengampu mata kuliah Sistem Operasi Jaringan kelas BB Semester Genap Tahun Ajaran 2024/2025 Ir. Yuris Mulya Saputra, S.T., M.Sc., Ph.D.
-#### Anggota kelompok 9:
+#### Anggota Kelompok 9:
 1. Nayla Innocentia Ekatri
 2. Azura Rizky Annisa
 3. Bima Mukhlisin Bil Sajjad
