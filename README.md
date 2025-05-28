@@ -32,4 +32,4 @@ Skrip ini dibuat dengan kontribusi dari semua anggota kelompok 9 dan bimbingan d
 2. [Azura Rizky Annisa](https://github.com/auzors)
 3. [Bima Mukhlisin Bil Sajjad](https://github.com/akubima)
 4. [Dafa Novran Hasjrullah]( https://github.com/Dafanh33)
-5. [Muhamad Mirza Sabil]()
+5. [Muhamad Mirza Sabil](https://github.com/MMirzaSabil)
